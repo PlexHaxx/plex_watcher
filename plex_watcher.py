@@ -4,7 +4,11 @@ import argparse
 import json
 import logging
 import ssl
+import sys
 import urllib2
+
+sys.path.append("xmltodict")
+
 import xmltodict
 
 
