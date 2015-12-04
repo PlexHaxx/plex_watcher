@@ -3,11 +3,14 @@
 import argparse
 import json
 import logging
+import os
 import ssl
 import sys
 import urllib2
 
-sys.path.append("xmltodict")
+PATH = os.path.dirname(os.path.realpath(__file__))
+xmltodict_path = os.path.join(PATH, 'xmltodict')
+sys.path.append(xmltodict_path)
 
 import xmltodict
 
@@ -80,15 +83,21 @@ def Main():
                       help='the port plex is running on')
   args = parser.parse_args()
 
-  logging.basicConfig(format=('%(asctime)s] %(message)s'), level=logging.DEBUG,
-                              datefmt='%m-%d %H:%M:%S')
+  logFormatter = logging.Formatter('%(asctime)s  %(message)s',
+                                   datefmt='%m-%d %H:%M:%S')
+
+  rootLogger = logging.getLogger()
+  rootLogger.setLevel(logging.DEBUG)
+  fileHandler = logging.FileHandler('/var/log/plex_watcher.log')
+  fileHandler.setFormatter(logFormatter)
+  rootLogger.addHandler(fileHandler)
 
   data = GetStatus(args.ip, args.port)
-  old_stats = ReadStats('stats.json')
+  old_stats = ReadStats('%s/stats.json' % PATH)
   cur_stats = ParseData(data)
   new_stats = UpdateStats(old_stats, cur_stats)
   if cur_stats != old_stats:
-    WriteStats(cur_stats, 'stats.json')
+    WriteStats(cur_stats, '%s/stats.json' % PATH)
   if len(new_stats) != 0:
     for line in new_stats:
       logging.info(line)
