@@ -92,7 +92,11 @@ def Main():
   fileHandler.setFormatter(logFormatter)
   rootLogger.addHandler(fileHandler)
 
-  data = GetStatus(args.ip, args.port)
+  try:
+    data = GetStatus(args.ip, args.port)
+  except urllib2.URLError:
+    # Plex is down.
+    return
   old_stats = ReadStats('%s/stats.json' % PATH)
   cur_stats = ParseData(data)
   new_stats = UpdateStats(old_stats, cur_stats)
